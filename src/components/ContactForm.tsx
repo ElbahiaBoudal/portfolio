@@ -4,8 +4,7 @@ import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 
-const FORMSPREE_ENDPOINT: string =
-  import.meta.env["VITE_FORMSPREE_ENDPOINT"] || "https://formspree.io/f/xjyknlqy";
+const FORM_ENDPOINT = import.meta.env["VITE_FORMSPREE_ENDPOINT"] as string | undefined;
 
 type FieldName = "name" | "email" | "message";
 type FormData = Record<FieldName, string>;
@@ -114,11 +113,17 @@ export function ContactForm() {
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
+    if (!FORM_ENDPOINT) {
+      setStatus("error");
+      setErrorMessage("The contact form is not configured yet. Please reach out directly.");
+      return;
+    }
+
     setStatus("submitting");
     setErrorMessage("");
 
     try {
-      const response = await fetch(FORMSPREE_ENDPOINT, {
+      const response = await fetch(FORM_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,9 +164,7 @@ export function ContactForm() {
   return (
     <>
       {/* Portal-based toast — lives outside the form, auto-dismisses after 3 s */}
-      {status === "success" && (
-        <SuccessToast onDone={() => setStatus("idle")} />
-      )}
+      {status === "success" && <SuccessToast onDone={() => setStatus("idle")} />}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-6" noValidate>
         {status === "error" && (
