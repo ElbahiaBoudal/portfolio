@@ -2,14 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowDown,
   ArrowRight,
-  ArrowUpRight,
   BrainCircuit,
   Code2,
   Database,
-  ExternalLink,
   Github,
   Linkedin,
-  Mail,
   Menu,
   Moon,
   ServerCog,
@@ -140,7 +137,11 @@ function Portfolio() {
     }
   };
 
+  // Reveal-on-scroll. Re-runs every time we come back from a project detail view,
+  // because the sections are re-created and need to be observed again.
   useEffect(() => {
+    if (selectedProjectId) return;
+
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
     const observer = new IntersectionObserver(
       (entries) =>
@@ -149,7 +150,12 @@ function Portfolio() {
     );
     elements.forEach((element) => observer.observe(element));
     return () => observer.disconnect();
-  }, []);
+  }, [selectedProjectId]);
+
+  // Open a project at the top of the page
+  useEffect(() => {
+    if (selectedProjectId) window.scrollTo({ top: 0 });
+  }, [selectedProjectId]);
 
   const scrollTo = (id: string) => {
     const targetId = id.toLowerCase();
@@ -453,10 +459,7 @@ function Portfolio() {
                   </div>
 
                   {/* Clickable Title */}
-                  <h3
-                    onClick={() => setSelectedProjectId(proj.id)}
-                    className="mt-3 font-display text-2xl font-medium tracking-tight text-foreground transition-colors group-hover:text-primary hover:underline"
-                  >
+                  <h3 className="mt-3 font-display text-2xl font-medium tracking-tight text-foreground transition-colors group-hover:text-primary hover:underline">
                     {proj.title}
                   </h3>
 
@@ -472,7 +475,10 @@ function Portfolio() {
                     View Details
                   </span>
                   <button
-                    onClick={() => setSelectedProjectId(proj.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedProjectId(proj.id);
+                    }}
                     className="rounded-full border border-border/80 bg-background p-1.5 text-muted-foreground group-hover:border-primary group-hover:text-primary group-hover:translate-x-1 transition-all"
                     aria-label={`Open details for ${proj.title}`}
                   >
@@ -526,7 +532,7 @@ function Portfolio() {
                 </div>
               </div>
             </div>
-            
+
             <div className="w-full">
               <ContactForm />
             </div>
